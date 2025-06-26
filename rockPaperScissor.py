@@ -52,14 +52,12 @@ def start_game():
 def get_player():
     print('Input your hand choice')
     your_hand = int(input('0:rock, 1:scissors, 2:paper'))
-    print('Your hand is: ', your_hand)
     return your_hand
 
 
 #get_computer() function
 def get_computer():
     computer_hand = random.randint(0, 2)
-    print('Computer hand is: ', computer_hand)
     return computer_hand
 
 #result function
@@ -71,8 +69,28 @@ def result(hand_diff):
     elif hand_diff > 0:
         print('Lose')
 
+
+#exercise 4 
+#getting hand names funtion and viewing them
+
+# get_hand_name function
+def get_hand_name(hand_numebr):
+    if hand_numebr == 0:
+        return 'rock'
+    elif hand_numebr == 1:
+        return 'scissors'
+    elif hand_numebr == 2:
+        return 'paper'
+##view_hands function
+def view_hands(your_hand, computer_hand):
+    print('Your hand is: ', get_hand_name(your_hand))
+    print('Computer hand is: ', get_hand_name(computer_hand))
+
+
 start_game()
 your_hand = get_player()
 computer_hand = get_computer()
 hand_diff = your_hand - computer_hand
 result(hand_diff)
+view_hands(your_hand, computer_hand)
+get_hand_name(hand_diff)
