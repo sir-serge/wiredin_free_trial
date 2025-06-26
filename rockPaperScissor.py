@@ -6,25 +6,38 @@ print('Input your hand choice')
 your_hand = int(input('0:rock, 1:scissors, 2:paper'))
 computer_hand = random.randint(0, 2)
 
-if your_hand == 0:
-    if computer_hand == 0:
-        print('Draw')
-    elif computer_hand == 1:
-        print('Win')
-    elif computer_hand == 2:
-        print('Lose')
-elif your_hand == 1:
-    if computer_hand == 0:
-        print('Lose')
-    elif computer_hand == 1:
-        print('Draw')
-    elif computer_hand == 2:
-        print('Win')
-elif your_hand == 2:
-    if computer_hand == 0:
-        print('Win')
-    elif computer_hand == 1:
-        print('Lose')
-    elif computer_hand == 2:
-        print('Draw')
 
+#exercise 1
+
+
+# if your_hand == 0:
+#     if computer_hand == 0:
+#         print('Draw')
+#     elif computer_hand == 1:
+#         print('Win')
+#     elif computer_hand == 2:
+#         print('Lose')
+# elif your_hand == 1:
+#     if computer_hand == 0:
+#         print('Lose')
+#     elif computer_hand == 1:
+#         print('Draw')
+#     elif computer_hand == 2:
+#         print('Win')
+# elif your_hand == 2:
+#     if computer_hand == 0:
+#         print('Win')
+#     elif computer_hand == 1:
+#         print('Lose')
+#     elif computer_hand == 2:
+#         print('Draw')
+
+#exercise 2
+
+differnece = your_hand - computer_hand
+if differnece == 0:
+    print('Draw')
+elif differnece <0:
+    print('Win')
+elif differnece > 0:
+    print('Lose')
