@@ -22,7 +22,7 @@ def change_input_number(input_str):
     split_input = list(input_str)
     column=str_data[ split_input[0]]
     print(f"Debug: column = {column}")
-    row=int(split_input[1])
+    row=int(split_input[1])-1
     print(f"Debug: row = {row}")
     cell_number=row * 3 + column
     print(f"Debug: cell_number = {cell_number}")
