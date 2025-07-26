@@ -1,13 +1,14 @@
 import random
 players=[]
 table=[]
-bet={}
 
 class Player:
-  def __init__(self, name,coin,bet):
+  def __init__(self, name,coin):
     self.name = name
     self.coin=coin
-    self.bet=bet
+    self.bets={}
+    for i in table:
+      self.bets.update({i.name:00})
 
   def info(self):
     print(f" {self.name} : {self.coin}")
@@ -112,13 +113,30 @@ def green_bar():
 
 def show_table():
    global table
-   for i in table:
-    print(green_bar() + color(i.color, ( i.name + '(x' + str(i.rate) + ')')) +green_bar())
+   header = (
+    green_bar() + "_____" +
+    green_bar()+" " + players[0].name +" "+
+    green_bar()+" " + players[2].name +" "+
+    green_bar()+" " + players[2].name +" "+
+    green_bar()+" " + players[3].name +" "+
+    green_bar()
+)
+   zeros=''
+   for i in range(len(table)+1):
+    if i==0:
+       print(header)
+    else:
+      print(green_bar() + color(table[i-1].color, ( table[i-1].name + '(x' + str(table[i-1].rate) + ')')) +green_bar()   +
+    " " +zeros.zfill(2)  +" "+
+    green_bar()+" " + zeros.zfill(2) +" "+
+    green_bar()+" " + zeros.zfill(2) +" "+
+    green_bar()+" " + zeros.zfill(2) +" "+
+    green_bar())
 
 
 def play():
   print('Debug:play()')
-  # create_player()
+  create_player()
   # show_player()
   create_table()
   show_table()    
