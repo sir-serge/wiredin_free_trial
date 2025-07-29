@@ -11,9 +11,6 @@ class Player:
     for i in table:
       self.bets.update({i.name:00})
 
-  def info(self):
-    print(f" {self.name} : {self.coin}")
-
   def set_bet_coin(self,bet_coin,bet_cell):
      self.coin-=bet_coin
      self.bets[bet_cell] += bet_coin
@@ -68,19 +65,16 @@ class computer(Player):
      super().__init__(name, coin)
 
   def bet(self):
-    # coins=random.randint(1,99)
-    if self.coin<=99:
-      coins=99
+    if self.coin <= 99:
+        coins = self.coin
     else:
-       coins=self.coin
-    bet_coin=random.randint(1,coins)
-    cells=[]
-    for i in table:
-      cells.append(i.__dict__['name'])
-      # print(cells)
-    set_random_key=random.randint(0,(len(cells)-1))
-    bet_cell=cells[set_random_key]
-    super().set_bet_coin(bet_coin,bet_cell)
+        coins = 99
+    bet_coin = random.randint(1, coins)
+
+    set_random_key = random.randint(0, len(cells) - 1)
+    bet_cell = cells[set_random_key]
+    super().set_bet_coin(bet_coin, bet_cell)
+
 
 class cell(Player):
    def __init__(self, name, rate,color):
@@ -94,6 +88,11 @@ class ColorBase:
   GREEN = '\033[32m'
   END = '\033[0m'
 
+def set_cell():
+    global cells
+    cells = [cell.name for cell in table] 
+
+
 def create_player():
   global players
   my=Human("My",500)
@@ -101,23 +100,14 @@ def create_player():
   c2=computer("c2",500)
   c3=computer("c3",500) 
   players=[my,c1,c2,c3]
-  
-
-def show_player():
-   global players
-  #  for i in players:
-  #     i.info()
-   for i in players:
-      i.bet()
-  #  for i in players:
-  #     i.info()
-
+ 
 def bet_player():
    for i in players:
        i.bet()
 
 def create_table():
     global table
+    table=[]
     table.append(cell('R', 2, 'red'))
     table.append(cell('B', 2, 'black'))
     table.append(cell('1', 8, 'red'))
@@ -150,20 +140,43 @@ def show_table():
     for player in players:
       row += str(player.bets[cell.name]).zfill(2) + green_bar()
     print(row)
+def check_hit():
+   win_cell=random.randint(0,len(cells)-1)
+   print(f'the winning number is {cells[win_cell]}')
+   print(f'{cells}')
+   for player in players:
+      if player.bets[cells[win_cell]] >= 1:
+          print(player.name + ' won ')
+   return win_cell
+def win_player(win_cell):
+   number=0
+   print(f"win cell {win_cell}")
+   gained_message=(f'gained {number} coins')
+   if(win_cell<3 and win_cell>=1):
+      number+=(win_cell-1)*2 
+      gained_message=(f'gained {number} coins')
+   else:
+      number+=win_cell*8
+      gained_message=(f'gained {number} coins')
 
-def set_cell():
-   global cell
-   cells=[]
-   for i in table:
-      cells.append(cell.__dict__['name'])
+   print(gained_message)   
+def show_coin():
+   player_coins=('[player\'s coun] ')
+   for i in players:
+      player_coins+=(f"{i.name} : {i.coin} /")
+   print(player_coins)
 
 def play():
   print('Debug:play()')
   create_table()
   create_player()
-  
-  # show_player()
-  show_table() 
+  show_coin()
+  set_cell()
+  # show_table() 
   bet_player()
   show_table()
+  winn_gain=check_hit()
+  win_player(winn_gain)
+  show_coin()
+
 play()
