@@ -17,8 +17,6 @@ class Player:
      print(self.name + ' bets ' + str(bet_coin) + ' coin(s) to '+bet_cell)
 
 
-     
-
 class Human(Player):
   def __init__(self, name, coin,):
     super().__init__(name, coin) 
@@ -88,6 +86,7 @@ class ColorBase:
   GREEN = '\033[32m'
   END = '\033[0m'
 
+   
 def set_cell():
     global cells
     cells = [cell.name for cell in table] 
@@ -100,10 +99,7 @@ def create_player():
   c2=computer("c2",500)
   c3=computer("c3",500) 
   players=[my,c1,c2,c3]
- 
-def bet_player():
-   for i in players:
-       i.bet()
+
 
 def create_table():
     global table
@@ -119,64 +115,86 @@ def create_table():
     table.append(cell('7', 8, 'red'))
     table.append(cell('8', 8, 'black'))
 
+
+    
 def color(color_name,string):
-   if color_name=="red":
+  if color_name=="red":
       return ColorBase.RED + string + ColorBase.END
-   elif color_name == 'green':
+  elif color_name == 'green':
       return ColorBase.GREEN + string + ColorBase.END
-   else:
+  else:
       return string
 def green_bar():
       return color("green","|")
+
+def bet_player():
+   for i in players:
+       i.bet()
 
 def show_table():
   row = green_bar() + '_____' + green_bar()
   for player in players:
     row += player.name + green_bar()
   print(row)
- 
+
   for cell in table:
     row = green_bar() + color(cell.color, cell.name + '(x' + str(cell.rate) + ')') + green_bar()
     for player in players:
       row += str(player.bets[cell.name]).zfill(2) + green_bar()
     print(row)
 def check_hit():
-   win_cell=random.randint(0,len(cells)-1)
-   print(f'the winning number is {cells[win_cell]}')
-   print(f'{cells}')
-   for player in players:
+  win_cell=random.randint(0,len(cells)-1)
+  print(f'the winning number is {cells[win_cell]}')
+  print(f'{cells}')
+  for player in players:
       if player.bets[cells[win_cell]] >= 1:
           print(player.name + ' won ')
-   return win_cell
+  return( win_cell)
 def win_player(win_cell):
-   number=0
-   print(f"win cell {win_cell}")
-   gained_message=(f'gained {number} coins')
-   if(win_cell<3 and win_cell>=1):
+  number=0
+  print(f"win cell {win_cell}")
+  gained_message=(f'gained {number} coins')
+  if(win_cell<3 and win_cell>=1):
       number+=(win_cell-1)*2 
       gained_message=(f'gained {number} coins')
-   else:
+  else:
       number+=win_cell*8
       gained_message=(f'gained {number} coins')
 
-   print(gained_message)   
+  print(gained_message)   
 def show_coin():
-   player_coins=('[player\'s coun] ')
-   for i in players:
+  player_coins=('[player\'s coun] ')
+  for i in players:
       player_coins+=(f"{i.name} : {i.coin} /")
-   print(player_coins)
+  print(player_coins)
+
+def initialize():
+   create_table()
+   create_player()
+   set_cell()
+def play_once():
+   bet_player()
+   show_coin()
+   show_table()
+   winn_gain=check_hit()
+   win_player(winn_gain)
+  #  show_coin()
+
 
 def play():
   print('Debug:play()')
-  create_table()
-  create_player()
-  show_coin()
-  set_cell()
-  # show_table() 
-  bet_player()
-  show_table()
-  winn_gain=check_hit()
-  win_player(winn_gain)
-  show_coin()
+  initialize()
+  # show_coin
+  play_once()
+  # create_table()
+  # create_player()
+  # show_coin()
+  # set_cell()
+  # # show_table() 
+  # bet_player()
+  # show_table()
+  # winn_gain=check_hit()
+  # win_player(winn_gain)
+  # show_coin()
 
 play()
