@@ -17,8 +17,8 @@ class Player:
     def set_bet_coin(self, bet_coin, bet_cell):
         self.coin -= bet_coin
         self.bets[bet_cell] += bet_coin
-        print(f"{self.name} bet {bet_coin} coin(s) to {bet_cell}.")
-
+        # print(f"{self.name} bet {bet_coin} coin(s) to {bet_cell}.")
+        print("{} bet {} coins(s) to {}".format(self.name,bet_coin,bet_cell))
     def reset_table(self):
         for key in self.bets:
             self.bets[key] = 0
