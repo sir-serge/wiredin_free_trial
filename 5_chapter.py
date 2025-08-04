@@ -14,4 +14,5 @@ h2 = soup.find_all('li', class_='sc-1bad1f0d-2')
 # print(f"{h2} h3 text")
 # # print(soup.prettify())
 
-heading=title.getText()
+for title in h2:
+    print(title.getText())
