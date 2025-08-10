@@ -119,9 +119,12 @@ def Play_once():
   if is_blackjack():
     win()
   else:
-    player_choise=choise()
-    if player_choise==1:
-      hit()
+    if is_burst():
+      lose()
+    else:
+      player_choice=choise()
+      if player_choice==1:
+        hit()
   
 def is_blackjack():
   if player[0].total_number==21:
@@ -135,9 +138,24 @@ def hit():
   if is_blackjack():
     win()
   else:
-    player_choice=choise()
-    if player_choice==1:
-      hit()
+    if is_burst():
+      lose()
+    else:
+      player_choice=choise()
+      if player_choice==1:
+        hit()
+
+def is_burst():
+  print(player[0].total_number)
+  if player[0].total_number>21:
+    
+    return True
+  else:
+    return False
+
+
+def lose():
+  print('lost')
 
 def play():
   print('Debug: play()')
