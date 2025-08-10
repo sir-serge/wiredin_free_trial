@@ -157,6 +157,21 @@ def is_burst():
 def lose():
   print('lost')
 
+def stand():
+  deal_card(player[1])
+  if   deal_card(player[1])<17:
+    stand()
+  else:
+    judge()
+
+
+def show_result():
+
+
+def judge():
+  print("result")
+
+
 def play():
   print('Debug: play()')
   load_image()
