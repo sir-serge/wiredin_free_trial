@@ -125,6 +125,8 @@ def Play_once():
       player_choice=choise()
       if player_choice==1:
         hit()
+      elif player_choice==2:
+        stand()
   
 def is_blackjack():
   if player[0].total_number==21:
@@ -144,7 +146,10 @@ def hit():
       player_choice=choise()
       if player_choice==1:
         hit()
-
+        hit()
+      elif player_choice==2:
+        stand()
+        
 def is_burst():
   print(player[0].total_number)
   if player[0].total_number>21:
@@ -159,17 +164,37 @@ def lose():
 
 def stand():
   deal_card(player[1])
-  if   deal_card(player[1])<17:
-    stand()
+  while (player[1].total_number)<17:
+     deal_card(player[1])
+
   else:
-    judge()
-
-
-def show_result():
+    result=judge()
+    show_result(result)
 
 
 def judge():
   print("result")
+  difference=player[0].total_number-player[1].total_number
+  if difference==0:
+    result='draw'
+  elif difference>=1:
+    result='win'
+  else:
+    result='lose'
+  return result
+
+def show_result(result):
+  for playing in player:
+    print(f'cards of{playing.name}:')
+    show_cards(playing.cards)
+  
+  if result=='draw':
+    print('draw')
+  elif result=='win':
+    print(f'{player[0].name} won')
+  else:
+    print(f'{player[1].name} won')
+  
 
 
 def play():
@@ -179,4 +204,5 @@ def play():
   player.append(human())
   player.append(Computer())
   Play_once()
+  show_result
 play()
