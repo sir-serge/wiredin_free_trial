@@ -4,9 +4,8 @@ import math
 data = [['O', '0'], ['l', '1'], ['u', 'v']]
 number_data = ['A', 'B', 'C', 'D', 'E']
 level = 1
-col = 5
-row = 4
-
+col = 3
+row = 3
 
 def start_message():
     print('Input cell number (e.g. A1) of the different character.')
@@ -78,8 +77,25 @@ def change_string(number):
     string = number_data[col_number] + str(row_number)
     return string
 
+def Level(string):
+    global level,col,row
+    print('this is leve function')
+    if string==True:
+        level+=1
+        print(f"leve={level}")
+        if row<col:
+            row+=1
+            print(f'this are rows{row}')
+        else:
+            col+=1
+            print(f'this are rows{row}')
+        return True
+    elif string==False:
+        level=1
+        return         
 
 def play():
+    global level,row,col
     section_message()
     mistake_number = view_question()
     choice = input('(e.g. A1)')
@@ -87,8 +103,14 @@ def play():
     input_number = change_input_number(choice)
     print('Debug: input_number = ' + str(input_number))
     is_correct = is_correct_number(mistake_number, input_number)
+    print(is_correct)
     view_result(is_correct, mistake_number)
-
-
+    while Level(is_correct):
+        print('is the correct')
+        play()
+    level=1
+    col = 3
+    row = 3
+    play()
 start_message()
 play()
