@@ -41,25 +41,39 @@ def show_teams():
 
 
 def choice_team(player):
-    if player == 'myself':
-        player_name = 'Your'
-    elif player == 'enemy':
-        player_name = 'Opponent\'s'
+    global choice_team_number_you  # store Player 1's choice for comparison
 
-    choice_team_number = (input('Select ' + player_name + ' team(1-3) '))
-    valid_input=validation(choice_team_number)
-    while valid_input is None:
-         choice_team_number = (input('Select ' + player_name + ' team(1-3) '))
-         valid_input=validation(choice_team_number)
-    playing_teams[player] = teams[valid_input - 1]
+    if player == 'myself':  # Player 1
+        player_name = 'Your'
+        choice_team_number_you = input('Select ' + player_name + ' team(1-3)')
+        valid_input = validation(choice_team_number_you)
+
+        while valid_input is None:  # keep asking until valid
+            choice_team_number = input('Select ' + player_name + ' team(1-3) ')
+            valid_input = validation(choice_team_number)
+
+    elif player == 'enemy':  # Player 2
+        player_name = 'Opponent\'s'
+        choice_team_number_opponent = input('Select ' + player_name + ' team(1-3)')
+
+        while choice_team_number_you == choice_team_number_opponent:  # avoid duplicate team
+            choice_team_number_opponent = input('Select ' + player_name + ' team(1-3)')
+
+        valid_input = validation(choice_team_number_opponent)
+        while valid_input is None:  # keep asking until valid
+            choice_team_number_opponent = input('Select ' + player_name + ' team(1-3) ')
+            valid_input = validation(choice_team_number_opponent)
+
+    playing_teams[player] = teams[valid_input - 1]  # assign chosen team
     print(player_name + ' team is \'' + playing_teams[player].name + '\'')
 
+
 def validation(number):
+    # return valid team number (1–2) or None
     if number.isdigit():
-        conver_to_digit=int(number)
-        if isinstance(conver_to_digit,int):
-            if conver_to_digit<3 and conver_to_digit>0:
-                return conver_to_digit
+        convert_to_digit = int(number)
+        if 0 < convert_to_digit <= 3:
+            return convert_to_digit
     return None
 
 
@@ -103,4 +117,4 @@ def play():
     print(score_boards[2])
 
 
-play()
+play() 
