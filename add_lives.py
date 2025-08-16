@@ -98,8 +98,7 @@ def play():
                 return play()  # or reset variables and continue
             elif replay_choice == 'n':
                 break
-            else:
-                print('Please enter Y or N')    
+   
     print('Thank you for playing!')
 
 
