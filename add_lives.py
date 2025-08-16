@@ -1,8 +1,5 @@
 import random
 
-results = {'win': 'win', 'lose': 'lose', 'draw': 'draw try again'}
-
-
 def start_message():
     print('Start \'rock-paper-scissors\'')
 
@@ -53,6 +50,7 @@ def get_result(hand_diff):
 
 
 def view_result(result):
+    results = {'win': 'win', 'lose': 'lose', 'draw': 'draw try again'}
     print(results[result])
 """
 function live to displaye lives of players
