@@ -1,130 +1,106 @@
 import random
-import math
 
-data = [['O', '0'], ['l', '1'], ['u', 'v']]
-number_data = ['A', 'B', 'C', 'D', 'E']
+hands = ['rock', 'scissors', 'paper']
+results = {'win': 'win', 'lose': 'lose', 'draw': 'draw try again'}
 
-# Difficulty level starts at 1
-level = 1
-# Initial number of columns
-col = 3
-# Initial number of rows
-row = 3
 
 def start_message():
-    print('Input cell number (e.g. A1) of the different character.')
+    print('Start \'rock-paper-scissors\'')
 
-def section_message():
-    # Show current difficulty level before starting the round
-    print('level: ' + str(level))
 
-def view_question():
-    choice_data = random.randint(0, 2)
-    mistake_number = random.randint(0, (col * row) - 1)
-    print('Debug: mistake_number = ' + str(mistake_number))
-    question = data[choice_data]
-    print(question)
-    i = 0
-    j = 0
-    question_str1 = '/|'
-    question_str2 = '--'
-    while i < col:
-        question_str1 += number_data[i] + ''
-        question_str2 += '-'
-        i += 1
-    print(question_str1)
-    print(question_str2)
-    i = 0
-    while i < row:
-        question_str = str(i + 1) + '|'
-        while j < col:
-            if (i * col + j) == mistake_number:
-                question_str += question[1]
-            else:
-                question_str += question[0]
-            j += 1
-        print(question_str)
-        i += 1
-        j = 0
-    return mistake_number
-
-def change_input_number(input_str):
-    str_data = {'A': 0, 'B': 1, 'C': 2, 'D': 3,
-                'E': 4}
-    input_str_split = list(input_str)
-    col_number = str_data[input_str_split[0]]
-    row_number = int(input_str_split[1]) - 1
-    input_number = row_number * col + col_number
-    return input_number
-
-def is_correct_number(mistake_number, input_number):
-    if mistake_number == input_number:
-        return True
+def is_hand(string):
+    if string.isdigit():
+        number = int(string)
+        if number >= 0 and number <= 2:
+            return True
+        else:
+            return False
     else:
         return False
 
-def view_result(is_correct, mistake_number):
-    if is_correct:
-        print('Correct!')
+
+def get_player():
+    print('Input your hand')
+    input_message = ''
+    index = 0
+    for hand in hands:
+        input_message += str(index) + ':' + hand
+        if index < 2:
+            input_message += ', '
+        index += 1
+    return input(input_message)
+
+
+def get_computer():
+    return random.randint(0, 2)
+
+
+def get_hand_name(hand_number):
+    return hands[hand_number]
+
+
+def view_hand(your_hand, computer_hand):
+    print('My hand is ' + get_hand_name(your_hand))
+    print('Rival\'s hand is ' + get_hand_name(computer_hand))
+
+
+def get_result(hand_diff):
+    if hand_diff == 0:
+        return 'draw'
+    elif hand_diff == -1 or hand_diff == 2:
+        return 'win'
     else:
-        print('Wrong')
-        print('Correct answer is ' + change_string(mistake_number))
+        return 'lose'
 
-def change_string(number):
-    col_number = number % col
-    row_number = math.floor(number / col) + 1
-    string = number_data[col_number] + str(row_number)
-    return string
 
-# Function that handles leveling up or resetting difficulty
-def Level(string):
-    global level, col, row
-    print('this is level function')
-    
-    if string == True:  # If the answer was correct
-        level += 1  # Increase level
-        print(f"level = {level}")
-        
-        # Increase grid size for difficulty progression
-        if row < col:
-            row += 1  # First priority: increase rows
-            print(f'Rows increased to {row}')
-        else:
-            col += 1  # Then increase columns
-            print(f'Columns increased to {col}')
-        
-        return True  # Continue game
-    
-    elif string == False:  # If the answer was wrong
-        level = 1  # Reset level back to 1
-        return  # End current round
-
+def view_result(result):
+    print(results[result])
+"""
+function live to displaye lives of players 
+"""
+def live(you_live,cpu_live):
+    print (f'Lives You:{you_live} / Rival:{cpu_live}' )            
 def play():
-    global level, row, col
-    section_message()  # Show current level
-    
-    mistake_number = view_question()
-    choice = input('(e.g. A1)')
-    print('Debug: choice = ' + choice)
-    
-    input_number = change_input_number(choice)
-    print('Debug: input_number = ' + str(input_number))
-    
-    is_correct = is_correct_number(mistake_number, input_number)
-    print(is_correct)
-    
-    view_result(is_correct, mistake_number)
-    
-    # Keep playing while Level() returns True (correct answer and level increased)
-    while Level(is_correct):
-        print('You answered correctly, moving to next level')
-        play()  # Recursive call to start next level
-    
-    # If wrong answer, reset everything back to initial values
-    level = 1
-    col = 3
-    row = 3
-    play()
+    # Set starting lives for both the player and the computer
+    you_live = 3
+    cpu_live = 3
+
+    # Main game loop: runs until either you or the CPU has 0 
+    while you_live > 0 and cpu_live > 0:
+        # Show current lives before each round
+        live(you_live, cpu_live)
+        your_hand = get_player()
+        while not is_hand(your_hand):  
+            your_hand = get_player()
+        your_hand = int(your_hand)
+        computer_hand = get_computer()
+        hand_diff = your_hand - computer_hand
+
+        view_hand(your_hand, computer_hand)
+
+        # Determine result of this round (win, lose, or draw)
+        result = get_result(hand_diff)
+        view_result(result)
+
+        # Adjust lives based on result
+        if result == 'win':
+            cpu_live -= 1  # Opponent loses a life
+        elif result == 'lose':
+            you_live -= 1  # Player loses a life
+
+    # This loop runs when someone has lost all lives
+    while cpu_live == 0 or you_live == 0:
+        # Ask if the player wants to replay the game
+        replay_choice = input('Replay? (Y or N): ')
+        while not replay_choice=='n' or replay_choice=='y':
+            replay_choice = input('Replay? (Y or N): ')
+        while replay_choice.lower() == 'y':
+            # Restart the game from scratch
+            play()
+            # Exit the game loop
+        print('Thank you for playing!')
+        break
+
 
 start_message()
 play()
