@@ -1,8 +1,6 @@
 import random
 
-players = []
 table = []
-cells = []
 
 
 class Player:
@@ -73,7 +71,7 @@ class Computer(Player):
     def __init__(self, name, coin):
         super().__init__(name, coin)
 
-    def bet(self):
+    def bet(self, cells):  # Pass cells as parameter
         if self.coin >= 99:
             max_bet_coin = 99
         else:
@@ -99,28 +97,31 @@ class ColorBase:
     END = '\033[0m'
 
 
-def set_cells():
-    global cells
-    cells = []
+def set_cells(cells):
+    cells.clear()  
     for cell in table:
-        cells.append(cell.__dict__['name'])
+        cells.append(cell.name)  # Simplified from cell.__dict__['name']
 
 
-def create_players():
-    global players
+def create_players(players):
+    players.clear()  # Clear any existing players
     human = Human('MY', 500)
     computer1 = Computer('C1', 500)
     computer2 = Computer('C2', 500)
     computer3 = Computer('C3', 500)
-    players = [human, computer1, computer2, computer3]
+    # Use extend() to add all players to the existing list
+    players.extend([human, computer1, computer2, computer3])
 
 
-def bet_players():
+def bet_players(players, cells):
     for player in players:
-        player.bet()
+        if isinstance(player, Computer):
+            player.bet(cells)  # Pass cells to Computer players
+        else:
+            player.bet()  # Human players don't need cells
 
 
-def check_hit():
+def check_hit(cells, players):
     hit_cell_number = random.randint(0, len(cells) - 1)
     hit_cell = cells[hit_cell_number]
     print('Winning number is ' + hit_cell + '.')
@@ -153,7 +154,7 @@ def win_player(player, bet_cell_name):
               '. Gained ' + str(win_coin) + ' coins.')
 
 
-def show_coin():
+def show_coin(players):
     message = '[Players\' coin] '
     for player in players:
         message += player.name + ': ' + str(player.coin) + ' / '
@@ -174,7 +175,7 @@ def create_table():
     table.append(Cell('8', 8, 'black'))
 
 
-def show_table():
+def show_table(players):
     row = green_bar() + '_____' + green_bar()
     for player in players:
         row += player.name + green_bar()
@@ -188,7 +189,7 @@ def show_table():
         print(row)
 
 
-def reset_table():
+def reset_table(players):
     for player in players:
         player.reset_table()
 
@@ -206,40 +207,42 @@ def green_bar():
     return color('green', '｜')
 
 
-def initialize():
-    create_table()
-    create_players()
-    set_cells()
-
-
-def play_once():
-    reset_table()
-    bet_players()
-    show_table()
-    check_hit()
-    show_coin()
-
-
-def is_game_end():
+def is_game_end(players):
     for player in players:
         if player.coin <= 0:
             return True
     return False
 
 
-def game_end():
+def game_end(players):
     for player in players:
         if player.coin <= 0:
             print('Game ends as ' + player.name + ' has no coin.')
 
 
+def initialize(cells, players):
+    create_table()
+    create_players(players)
+    set_cells(cells)
+
+
+def play_once(cells, players):
+    reset_table(players)
+    bet_players(players, cells)
+    show_table(players)
+    check_hit(cells, players)
+    show_coin(players)
+
+
 def play():
-    initialize()
-    show_coin()
-    while not is_game_end():
-        play_once()
+    players = []
+    cells = []
+    initialize(cells, players)
+    show_coin(players)
+    while not is_game_end(players):
+        play_once(cells, players)
     else:
-        game_end()
+        game_end(players)
 
 
 play()
