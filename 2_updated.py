@@ -46,7 +46,19 @@ def view_question(data, number_data, row, col):
     
 def change_input_number(input_str, col):
     # Convert user input (e.g., "A1") into a grid index
-    str_data = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4}
+    str_data = {
+    'A': 0,
+    'B': 1,
+    'C': 2,
+    'D': 3,
+    'E': 4,
+    'F': 5,
+    'G': 6,
+    'H': 7,
+    'I': 8,
+    'J': 9
+}
+
     input_str_split = list(input_str)
     col_number = str_data[input_str_split[0]]
     row_number = int(input_str_split[1]) - 1
@@ -75,7 +87,8 @@ def change_string(number):
     
 def Level(string, level, row, col):
     # Adjust difficulty based on whether the player was correct
-    if string == True:  
+    if string == True:
+      if level<13:  
         level += 1  
         # Increase grid size (rows first, then columns)
         if row < col:
@@ -110,6 +123,8 @@ def play():
         level, row, col = Level(is_correct, level, row, col)
         if level <= 0:
             level = 1
+        if level ==13:
+            print('all level passed "congrats"')
             
             
             
