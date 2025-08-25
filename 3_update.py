@@ -1,10 +1,6 @@
 import random
 import math
 
-teams = []
-playing_teams = {'myself': False, 'enemy': False}
-
-
 class Team:
     def __init__(self, name, attack, defense):
         self.name = name
@@ -13,108 +9,133 @@ class Team:
         self.total_score = 0
 
     def info(self):
-        print(self.name + ': Offensive power:' + str(self.attack) +
-              ' / Defensive power:' + str(self.defense))
+        print(f"{self.name}: Offensive power:{self.attack} / Defensive power:{self.defense}")
 
-    def get_hit_rate(self):
-        return random.randint(10, self.attack)
+    def get_hit_rate(self, special=False):
+        atk = self.attack * 2 if special else self.attack
+        return random.randint(10, atk)
 
-    def get_out_rate(self):
-        return random.randint(10, self.defense)
+    def get_out_rate(self, special=False):
+        df = self.defense * 2 if special else self.defense
+        return random.randint(10, df)
 
 
 def create_teams():
-    global teams
-    team1 = Team('Atackers', 80, 20)
-    team2 = Team('Defenders', 30, 70)
-    team3 = Team('Averages', 50, 50)
-    teams = [team1, team2, team3]
+    return [
+        Team('Attackers', 80, 20),
+        Team('Defenders', 30, 70),
+        Team('Averages', 50, 50)
+    ]
 
 
-def show_teams():
-    index = 1
+def show_teams(teams):
     print('Information of all teams')
-    for team in teams:
-        print(str(index))
+    for i, team in enumerate(teams, start=1):
+        print(i)
         team.info()
-        index += 1
 
 
-def choice_team(player):
-    global choice_team_number_you  # store Player 1's choice for comparison
-
-    if player == 'myself':  # Player 1
+def choice_team(player, teams, chosen_number=None):
+    if player == 'myself':
         player_name = 'Your'
-        choice_team_number_you = input('Select ' + player_name + ' team(1-3)')
-        valid_input = validation(choice_team_number_you)
+    else:
+        player_name = "Opponent's"
 
-        while valid_input is None:  # keep asking until valid
-            choice_team_number = input('Select ' + player_name + ' team(1-3) ')
-            valid_input = validation(choice_team_number)
-
-    elif player == 'enemy':  # Player 2
-        player_name = 'Opponent\'s'
-        choice_team_number_opponent = input('Select ' + player_name + ' team(1-3)')
-
-        while choice_team_number_you == choice_team_number_opponent:  # avoid duplicate team
-            choice_team_number_opponent = input('Select ' + player_name + ' team(1-3)')
-
-        valid_input = validation(choice_team_number_opponent)
-        while valid_input is None:  # keep asking until valid
-            choice_team_number_opponent = input('Select ' + player_name + ' team(1-3) ')
-            valid_input = validation(choice_team_number_opponent)
-
-    playing_teams[player] = teams[valid_input - 1]  # assign chosen team
-    print(player_name + ' team is \'' + playing_teams[player].name + '\'')
+    while True:
+        choice = input(f'Select {player_name} team (1-3): ')
+        if not choice.isdigit():
+            print("Invalid input! Must be a number 1–3.")
+            continue
+        choice_number = int(choice)
+        if choice_number < 1 or choice_number > 3:
+            print("Invalid input! Must be 1, 2, or 3.")
+            continue
+        if chosen_number and choice_number == chosen_number:
+            print("That team is already taken! Pick another.")
+            continue
+        break
+    print(f"{player_name} team is '{teams[choice_number - 1].name}'")
+    return choice_number
 
 
-def validation(number):
-    # return valid team number (1–2) or None
-    if number.isdigit():
-        convert_to_digit = int(number)
-        if 0 < convert_to_digit <= 3:
-            return convert_to_digit
-    return None
+def get_play_inning(inning, playing_teams):
+    # Determine special innings independently for each team (1/5 chance)
+    special_myself = random.randint(1, 5) == 1
+    special_enemy = random.randint(1, 5) == 1
 
-
-def get_play_inning(inning):
     if inning == 'top':
-        hit_rate = playing_teams['myself'].get_hit_rate()
-        out_rate = playing_teams['enemy'].get_out_rate()
-    elif inning == 'bottom':
-        hit_rate = playing_teams['enemy'].get_hit_rate()
-        out_rate = playing_teams['myself'].get_out_rate()
+        hit_rate = playing_teams['myself'].get_hit_rate(special_myself)
+        out_rate = playing_teams['enemy'].get_out_rate(special_enemy)
+    else:  # bottom
+        hit_rate = playing_teams['enemy'].get_hit_rate(special_enemy)
+        out_rate = playing_teams['myself'].get_out_rate(special_myself)
+
     inning_score = math.floor((hit_rate - out_rate) / 10)
     if inning_score < 0:
         inning_score = 0
+
+    # Print special inning info
+    if special_myself and inning == 'top':
+        print(">>> Your team is in a SPECIAL INNING! (Attack doubled)")
+    if special_enemy and inning == 'top':
+        print(">>> Opponent's defense is SPECIAL this inning! (Defense doubled)")
+    if special_enemy and inning == 'bottom':
+        print(">>> Opponent's team is in a SPECIAL INNING! (Attack doubled)")
+    if special_myself and inning == 'bottom':
+        print(">>> Your defense is SPECIAL this inning! (Defense doubled)")
+
     return inning_score
 
 
 def play():
-    create_teams()
-    show_teams()
-    choice_team('myself')
-    choice_team('enemy')
+    # Local variables
+    teams = create_teams()
+    playing_teams = {}
+
+    show_teams(teams)
+
+    # Player picks
+    player_choice = choice_team('myself', teams)
+    playing_teams['myself'] = teams[player_choice - 1]
+
+    # Opponent picks
+    enemy_choice = choice_team('enemy', teams, chosen_number=player_choice)
+    playing_teams['enemy'] = teams[enemy_choice - 1]
+
     score_boards = ['________|', 'You     |', 'Opponent|']
+
     for i in range(9):
         score_boards[0] += str(i + 1) + '｜'
-        # attack of the top
-        inning_score = get_play_inning('top')
+
+        # top half
+        inning_score = get_play_inning('top', playing_teams)
         score_boards[1] += str(inning_score) + '｜'
         playing_teams['myself'].total_score += inning_score
-        # attack of the bottom
+
+        # bottom half
         if i == 8 and playing_teams['myself'].total_score < playing_teams['enemy'].total_score:
             score_boards[2] += 'X｜'
         else:
-            inning_score = get_play_inning('bottom')
+            inning_score = get_play_inning('bottom', playing_teams)
             score_boards[2] += str(inning_score) + '｜'
             playing_teams['enemy'].total_score += inning_score
+
+    # totals
     score_boards[0] += 'R｜'
     score_boards[1] += str(playing_teams['myself'].total_score) + '｜'
     score_boards[2] += str(playing_teams['enemy'].total_score) + '｜'
-    print(score_boards[0])
-    print(score_boards[1])
-    print(score_boards[2])
+
+    # print scoreboard
+    for line in score_boards:
+        print(line)
+
+    # Announce winner
+    if playing_teams['myself'].total_score > playing_teams['enemy'].total_score:
+        print("\n>>> You win!")
+    elif playing_teams['myself'].total_score < playing_teams['enemy'].total_score:
+        print("\n>>> Opponent wins!")
+    else:
+        print("\n>>> It's a draw!")
 
 
-play() 
+play()
