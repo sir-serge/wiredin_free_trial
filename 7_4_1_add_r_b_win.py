@@ -6,7 +6,7 @@ class Player:
         self.name = name
         self.coin = coin
         self.bets = {}
-        self.reset_table()
+        # Don't call reset_table() here since table doesn't exist yet
 
     def set_bet_coin(self, bet_coin, bet_cell):
         self.coin -= bet_coin
@@ -14,7 +14,7 @@ class Player:
         print(self.name + ' bet ' + str(bet_coin) +
               ' coin(s) to ' + bet_cell + '.')
 
-    def reset_table(self):
+    def reset_table(self, table):  # Accept table as parameter
         for cell in table:
             self.bets.update({cell.name: 0})
 
@@ -101,7 +101,7 @@ def set_cells(cells, table):
         cells.append(cell.name)  # Simplified from cell.__dict__['name']
 
 
-def create_players(players):
+def create_players(players, table):  # Add table parameter
     players.clear()  # Clear any existing players
     human = Human('MY', 500)
     computer1 = Computer('C1', 500)
@@ -109,6 +109,10 @@ def create_players(players):
     computer3 = Computer('C3', 500)
     # Use extend() to add all players to the existing list
     players.extend([human, computer1, computer2, computer3])
+    
+    # Initialize bets for all players now that table exists
+    for player in players:
+        player.reset_table(table)
 
 
 def bet_players(players, cells):
@@ -220,7 +224,7 @@ def game_end(players):
 
 def initialize(cells, players, table):
     create_table(table)
-    create_players(players)
+    create_players(players, table)  # Pass table to create_players
     set_cells(cells, table)
 
 
