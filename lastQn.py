@@ -73,20 +73,22 @@ class play_game:
         # marks = ['Spade', 'Heart', 'Diamond', 'Club']
         for i, mark in enumerate(self.marks):
             for j, number in enumerate(numbers):
-                self.cards.append(
-                    self.Card(self.mark, self.display_names[j], number, card_images[i*len(numbers)+j]))
+                self.cards.append(Card(mark, self.display_names[j], number, card_images[i*len(numbers)+j]))
 
 
-    def show_cards(self):
-        for i, card in enumerate(self.cards):
-            print(f"{card.display_name} of {card.mark}")
-            plt.subplot(1, 6, i + 1)
+    def show_cards(self, player):
+        print(f"\n{player.name}'s cards: ", end="")
+        for i, card in enumerate(player.cards):
+            print(f"{card.display_name} of {card.mark}", end="  ")
+            plt.subplot(1, len(player.cards), i + 1)
             plt.axis('off')
             plt.imshow(card.image)
         plt.show()
+        print(f"  total: {player.total_number}")
 
 
-    def deal_card(self,player):
+
+    def deal_card(self, player, Cards):
         tmp_cards = list(filter(lambda n: n.is_dealt == False, self.cards))
         assert (len(tmp_cards) != 0), "No cards left"
 
@@ -95,15 +97,14 @@ class play_game:
 
         player.cards.append(tmp_card)
         player.total_number += tmp_card.number
-        self.calc_ace(player,self.cards)
+        self.calc_ace(player)
 
 
-    def calc_ace(self,player,cards):
-        for card in self.player.cards:
-            if player.total_number >= 22:
-                if card.number == 11:
-                    player.total_number -= 10
-                    card.number = 1
+    def calc_ace(self, player):
+        for card in player.cards:
+            if player.total_number >= 22 and card.number == 11:
+                player.total_number -= 10
+                card.number = 1
 
 
 
@@ -150,7 +151,7 @@ class play_game:
 
     def hit(self):
         self.deal_card(self.players[0],self.cards)
-        self.show_cards(self.players[0].cards)
+        self.show_cards(self.players[0])
         if self.is_blackjack():
             self.win()
         elif self.is_bust():
@@ -204,8 +205,8 @@ class play_game:
         self.deal_card(self.players[0], self.cards)
         self.deal_card(self.players[1], self.cards)
         self.deal_card(self.players[0], self.cards)
-        self.show_cards(self.players[0].cards)
-        if self.is_blackjack(self.players):
+        self.show_cards(self.players[0])
+        if self.is_blackjack():
             self.win(self.players,self.cards)
         else:
             choice_key = self.choice()
@@ -230,9 +231,9 @@ class play_game:
         # cards = []
 
         # players = []
-        # card_images = []
-        # load_image(card_images)
-        # create_cards(card_images,cards)
+        card_images = []
+        load_image(card_images)
+        self.create_cards(card_images)
 
 
         coins=500
