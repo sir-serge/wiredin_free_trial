@@ -23,28 +23,24 @@ class Player:
 class Human(Player):
     def __init__(self, name, coin):
         super().__init__(name, coin)
-
+    
     def try_double_bet(self, table, computers):
         """Ask human if they want to bet double after a win"""
         if self.last_bet is None:
             return False  # no bet to double
 
-        bet_coin, _ = self.last_bet
+        bet_coin, bet_cell = self.last_bet  # ✅ FIX: keep the cell too
         bet_double_message = input('You won! Do you want to bet double (y or n)? ')
         if bet_double_message.lower() == 'y':
             double_coin = bet_coin * 2  # true double, no cap
 
-            # ask where to place the doubled bet
-            bet_message = 'On what do you bet with ' + str(double_coin) + ' coins?: (R, B, 1-8)'
-            bet_cell = input(bet_message)
-            while not self.enable_bet_cell(bet_cell):
-                bet_cell = input(bet_message)
-
-            # reset all bets
+            # reset all bets first
             self.reset_table(table)
-            super().set_bet_coin(double_coin, bet_cell)
+            super().set_bet_coin(double_coin, bet_cell)  # reuse same bet cell
 
-            # let computers bet again for this double round
+            print(f"Double bet placed: {double_coin} coin(s) on {bet_cell}.")
+
+            # let computers re-bet for this double round
             for comp in computers:
                 comp.reset_table(table)
                 comp.bet([c.name for c in table])
@@ -275,4 +271,5 @@ class Game_Play:
             self.game_end()
 
 
-Game_Play().play()  
+if __name__ == "__main__":
+    Game_Play().play()
