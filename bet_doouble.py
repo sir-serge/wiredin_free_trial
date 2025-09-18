@@ -12,81 +12,56 @@ class Player:
         self.coin -= bet_coin
         self.bets[bet_cell] = bet_coin
         self.last_bet = (bet_coin, bet_cell)  # remember last bet
-        print(self.name + ' bet ' + str(bet_coin) +
-              ' coin(s) to ' + bet_cell + '.')
+        print(f"{self.name} bet {bet_coin} coin(s) to {bet_cell}.")
 
     def reset_table(self, table):
         for cell in table:
-            self.bets.update({cell.name: 0})
+            self.bets[cell.name] = 0
 
 
 class Human(Player):
     def __init__(self, name, coin):
         super().__init__(name, coin)
-    
+
     def try_double_bet(self, table, computers):
         """Ask human if they want to bet double after a win"""
         if self.last_bet is None:
             return False  # no bet to double
 
-        bet_coin, bet_cell = self.last_bet  # ✅ FIX: keep the cell too
+        bet_coin, bet_cell = self.last_bet
         bet_double_message = input('You won! Do you want to bet double (y or n)? ')
         if bet_double_message.lower() == 'y':
-            double_coin = bet_coin * 2  # true double, no cap
-
-            # reset all bets first
+            double_coin = bet_coin * 2
             self.reset_table(table)
-            super().set_bet_coin(double_coin, bet_cell)  # reuse same bet cell
+            super().set_bet_coin(double_coin, bet_cell)
 
-            print(f"Double bet placed: {double_coin} coin(s) on {bet_cell}.")
-
-            # let computers re-bet for this double round
+            # computers place bets normally for this round
             for comp in computers:
                 comp.reset_table(table)
                 comp.bet([c.name for c in table])
+                # Remove initial bet print for computers who will double later
 
-            return True  # signal extra round
+            print(f"MY Double bet placed: {double_coin} coin(s) on {bet_cell}.")
+            return True
         return False
 
     def bet(self):
-        if self.coin >= 99:
-            max_bet_coin = 99
-        else:
-            max_bet_coin = self.coin
-        bet_message = 'How many coins do you bet?:(1-' + str(max_bet_coin) + ')'
-        bet_coin = input(bet_message)
+        max_bet_coin = min(99, self.coin)
+        bet_coin = input(f'How many coins do you bet?:(1-{max_bet_coin}) ')
         while not self.enable_bet_coin(bet_coin, max_bet_coin):
-            bet_coin = input(bet_message)
+            bet_coin = input(f'How many coins do you bet?:(1-{max_bet_coin}) ')
 
-        bet_message = 'On what do you bet?: (R, B, 1-8)'
-        bet_cell = input(bet_message)
+        bet_cell = input('On what do you bet?: (R, B, 1-8) ')
         while not self.enable_bet_cell(bet_cell):
-            bet_cell = input(bet_message)
+            bet_cell = input('On what do you bet?: (R, B, 1-8) ')
 
         super().set_bet_coin(int(bet_coin), bet_cell)
 
     def enable_bet_coin(self, string, max_bet_coin):
-        if string.isdigit():
-            number = int(string)
-            if 1 <= number <= max_bet_coin:
-                return True
-            else:
-                return False
-        else:
-            return False
+        return string.isdigit() and 1 <= int(string) <= max_bet_coin
 
     def enable_bet_cell(self, string):
-        if string.isdigit():
-            number = int(string)
-            if 1 <= number <= 8:
-                return True
-            else:
-                return False
-        else:
-            if string == 'R' or string == 'B':
-                return True
-            else:
-                return False
+        return string in [str(i) for i in range(1, 9)] + ['R', 'B']
 
 
 class Computer(Player):
@@ -94,15 +69,27 @@ class Computer(Player):
         super().__init__(name, coin)
 
     def bet(self, cells):
-        if self.coin >= 99:
-            max_bet_coin = 99
-        else:
-            max_bet_coin = self.coin
+        max_bet_coin = min(99, self.coin)
         bet_coin = random.randint(1, max_bet_coin)
-
-        bet_cell_number = random.randint(0, len(cells) - 1)
-        bet_cell = cells[bet_cell_number]
+        bet_cell = cells[random.randint(0, len(cells) - 1)]
         super().set_bet_coin(bet_coin, bet_cell)
+
+    def try_double_bet(self, table):
+        """50% chance to double on same cell after a win"""
+        if self.last_bet is None:
+            return False
+
+        bet_coin, bet_cell = self.last_bet
+        double_coin = bet_coin * 2
+        if self.coin < double_coin:
+            return False  # can't afford
+
+        if random.random() < 0.5:  # 50% chance
+            self.reset_table(table)
+            super().set_bet_coin(double_coin, bet_cell)
+            print(f"{self.name} chose to double! {double_coin} coin(s) on {bet_cell}.")
+            return True
+        return False
 
 
 class Cell:
@@ -126,18 +113,15 @@ class Game_Play:
         self.table = []
 
     def set_cells(self):
-        self.cells.clear()
-        for cell in self.table:
-            self.cells.append(cell.name)
+        self.cells = [cell.name for cell in self.table]
 
     def create_players(self):
-        self.players.clear()
-        human = Human('MY', 500)
-        computer1 = Computer('C1', 500)
-        computer2 = Computer('C2', 500)
-        computer3 = Computer('C3', 500)
-        self.players.extend([human, computer1, computer2, computer3])
-
+        self.players = [
+            Human('MY', 500),
+            Computer('C1', 500),
+            Computer('C2', 500),
+            Computer('C3', 500)
+        ]
         for player in self.players:
             player.reset_table(self.table)
 
@@ -151,77 +135,97 @@ class Game_Play:
     def check_hit(self):
         hit_cell_number = random.randint(0, len(self.cells) - 1)
         hit_cell = self.cells[hit_cell_number]
-        print('Winning number is ' + hit_cell + '.')
+        print(f'Winning number is {hit_cell}.')
 
-        extra_spin = False
+        # Determine winners
+        winners = []
         for player in self.players:
-            # Case 1: Exact number bet
+            won_cells = []
             if player.bets[hit_cell] >= 1:
-                self.win_player(player, hit_cell)
-                if isinstance(player, Human):
-                    if player.try_double_bet(self.table, [p for p in self.players if isinstance(p, Computer)]):
-                        extra_spin = True
-
-            # Case 2: Bet on "R"
+                won_cells.append(hit_cell)
             if player.bets['R'] >= 1 and self.table[hit_cell_number].color == 'red':
-                self.win_player(player, 'R')
-                if isinstance(player, Human):
-                    if player.try_double_bet(self.table, [p for p in self.players if isinstance(p, Computer)]):
-                        extra_spin = True
-
-            # Case 3: Bet on "B"
+                won_cells.append('R')
             if player.bets['B'] >= 1 and self.table[hit_cell_number].color == 'black':
-                self.win_player(player, 'B')
-                if isinstance(player, Human):
-                    if player.try_double_bet(self.table, [p for p in self.players if isinstance(p, Computer)]):
-                        extra_spin = True
+                won_cells.append('B')
+            if won_cells:
+                winners.append((player, won_cells))
+                for cell in won_cells:
+                    self.win_player(player, cell)
 
-        if extra_spin:
+        # Handle doubling
+        human_wants_double = False
+        doubling_computers = []
+        for player, _ in winners:
+            if isinstance(player, Human):
+                if player.try_double_bet(self.table, [p for p in self.players if isinstance(p, Computer)]):
+                    human_wants_double = True
+            elif isinstance(player, Computer):
+                if player.try_double_bet(self.table):
+                    doubling_computers.append(player)
+
+        # Show table after double bets
+        if human_wants_double or doubling_computers:
             self.show_table()
-            self.check_hit()
+            # If human doubled, spin for all again
+            if human_wants_double:
+                self.check_hit()
+            # If only computers doubled, spin only for them
+            elif doubling_computers:
+                self.handle_computer_only_double(doubling_computers)
+
+    def handle_computer_only_double(self, doubling_computers):
+        hit_cell_number = random.randint(0, len(self.cells) - 1)
+        hit_cell = self.cells[hit_cell_number]
+        print(f'Winning number for computer double: {hit_cell}')
+        for comp in doubling_computers:
+            comp_won = False
+            if comp.bets[hit_cell] >= 1:
+                self.win_player(comp, hit_cell)
+                comp_won = True
+            if comp.bets['R'] >= 1 and self.table[hit_cell_number].color == 'red':
+                self.win_player(comp, 'R')
+                comp_won = True
+            if comp.bets['B'] >= 1 and self.table[hit_cell_number].color == 'black':
+                self.win_player(comp, 'B')
+                comp_won = True
+            if not comp_won:
+                print(f"{comp.name} lost the double bet.")
 
     def win_player(self, player, bet_cell_name):
-        table_cell = None
-        for c in self.table:
-            if c.name == bet_cell_name:
-                table_cell = c
-                break
+        table_cell = next((c for c in self.table if c.name == bet_cell_name), None)
         if table_cell:
             win_coin = player.bets[bet_cell_name] * table_cell.rate
             player.coin += win_coin
-            print(player.name + ' won on ' + bet_cell_name +
-                  '. Gained ' + str(win_coin) + ' coins.')
+            print(f"{player.name} won on {bet_cell_name}. Gained {win_coin} coins.")
 
     def show_coin(self):
         message = '[Players\' coin] '
-        for player in self.players:
-            message += player.name + ': ' + str(player.coin) + ' / '
+        message += ' / '.join(f"{p.name}: {p.coin}" for p in self.players)
         print(message)
 
     def create_table(self):
-        self.table.clear()
-        self.table.append(Cell('R', 2, 'red'))
-        self.table.append(Cell('B', 2, 'black'))
-        self.table.append(Cell('1', 8, 'red'))
-        self.table.append(Cell('2', 8, 'black'))
-        self.table.append(Cell('3', 8, 'red'))
-        self.table.append(Cell('4', 8, 'black'))
-        self.table.append(Cell('5', 8, 'red'))
-        self.table.append(Cell('6', 8, 'black'))
-        self.table.append(Cell('7', 8, 'red'))
-        self.table.append(Cell('8', 8, 'black'))
+        self.table = [
+            Cell('R', 2, 'red'),
+            Cell('B', 2, 'black'),
+            Cell('1', 8, 'red'),
+            Cell('2', 8, 'black'),
+            Cell('3', 8, 'red'),
+            Cell('4', 8, 'black'),
+            Cell('5', 8, 'red'),
+            Cell('6', 8, 'black'),
+            Cell('7', 8, 'red'),
+            Cell('8', 8, 'black'),
+        ]
 
     def show_table(self):
         row = self.green_bar() + '_____' + self.green_bar()
-        for player in self.players:
-            row += player.name + self.green_bar()
+        for p in self.players:
+            row += p.name + self.green_bar()
         print(row)
-
         for cell in self.table:
-            row = self.green_bar() + self.color(cell.color, cell.name +
-                                    '(x' + str(cell.rate) + ')') + self.green_bar()
-            for player in self.players:
-                row += str(player.bets[cell.name]).zfill(2) + self.green_bar()
+            row = self.green_bar() + self.color(cell.color, f"{cell.name}(x{cell.rate})") + self.green_bar()
+            for p in self.players:
+                row += str(p.bets[cell.name]).zfill(2) + self.green_bar()
             print(row)
 
     def reset_table(self):
@@ -240,15 +244,12 @@ class Game_Play:
         return self.color('green', '｜')
 
     def is_game_end(self):
-        for player in self.players:
-            if player.coin <= 0:
-                return True
-        return False
+        return any(p.coin <= 0 for p in self.players)
 
     def game_end(self):
-        for player in self.players:
-            if player.coin <= 0:
-                print('Game ends as ' + player.name + ' has no coin.')
+        for p in self.players:
+            if p.coin <= 0:
+                print(f"Game ends as {p.name} has no coin.")
 
     def initialize(self):
         self.create_table()
@@ -267,8 +268,7 @@ class Game_Play:
         self.show_coin()
         while not self.is_game_end():
             self.play_once()
-        else:
-            self.game_end()
+        self.game_end()
 
 
 if __name__ == "__main__":
