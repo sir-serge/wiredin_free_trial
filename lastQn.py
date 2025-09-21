@@ -124,7 +124,7 @@ class play_game:
         return int(choice_key)
 
 
-    def enable_choice(string):
+    def enable_choice(self,string):
         if string.isdigit():
             number = int(string)
             if number >= 1 and number <= 2:
@@ -159,7 +159,7 @@ class play_game:
         else:
             choice_key = self.choice()
             if choice_key == 1:
-                self.hit(self.players)
+                self.hit()
             elif choice_key == 2:
                 self.stand(self.players,self.cards)
 
@@ -211,7 +211,7 @@ class play_game:
         else:
             choice_key = self.choice()
             if choice_key == 1:
-                self.hit(self.players,self.cards)
+                self.hit()
             elif choice_key == 2:
                 self.stand(self.players,self.cards)
 
