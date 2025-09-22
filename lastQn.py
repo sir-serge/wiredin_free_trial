@@ -109,11 +109,11 @@ class play_game:
 
 
     def win(self):
-        self.show_result('win',self.players,self.cards)
+        self.show_result('result')
 
 
     def lose(self):
-        self.show_result('lose',self.players,self.cards)
+        self.show_result('result')
 
 
     def choice(self):
@@ -155,25 +155,25 @@ class play_game:
         if self.is_blackjack():
             self.win()
         elif self.is_bust():
-            self.lose(self.players,self.cards)
+            self.lose()
         else:
             choice_key = self.choice()
             if choice_key == 1:
                 self.hit()
             elif choice_key == 2:
-                self.stand(self.players,self.cards)
+                self.stand()
 
 
     def stand(self):
         self.deal_card(self.players[1],self.cards)
-        if self.is_bust(self.players[1]):
+        if self.is_bust():
             self.win(self.players,self.cards)
         else:
             if self.players[1].total_number < 17:
-                self.stand(self.players,self.cards)
+                self.stand()
             else:
-                result = self.judge(self.players)
-                self.show_result(result,self.players,self.cards)
+                result = self.judge()
+                self.show_result(result)
 
 
     def judge(self):
@@ -187,10 +187,10 @@ class play_game:
         return result
 
 
-    def show_result(result,self):
+    def show_result(self,result):
         for player in self.players:
             print(f"Cards of {player.name}:")
-            self.show_cards(player.cards)
+            self.show_cards(player)
 
         if result == 'draw':
             print('Draw')
@@ -207,16 +207,16 @@ class play_game:
         self.deal_card(self.players[0], self.cards)
         self.show_cards(self.players[0])
         if self.is_blackjack():
-            self.win(self.players,self.cards)
+            self.win()
         else:
             choice_key = self.choice()
             if choice_key == 1:
                 self.hit()
             elif choice_key == 2:
-                self.stand(self.players,self.cards)
+                self.stand()
 
 
-    def player_bets(result,bet_coins,coins):
+    def player_bets(self,result,bet_coins,coins):
             if result.lower()=='win':
                 coins+=bet_coins
             elif result.lower()=='lose':
@@ -251,10 +251,12 @@ class play_game:
             bet_coins=int(input_message)
             while bet_coins>100 or bet_coins<10 or bet_coins>coins:
                 bet_coins=int(input_message)
-            self.players.append(Human())
-            self.players.append(Computer())
+            # self.players.append(Human())
+            # self.players.append(Computer())
+            self.players = [Human(), Computer()]
             self.play_once()
-            coins+=self.player_bets(self.judge(self.players),bet_coins,coins)
+            coins += self.player_bets(self.judge(),bet_coins, coins)
+
 
 
 
