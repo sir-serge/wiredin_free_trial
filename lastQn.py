@@ -6,8 +6,6 @@ import numpy as np
 import random
 
 
-
-
 def load_image(card_images):
     image_name = 'cards.jpg'
     vsplit_number = 4
@@ -66,15 +64,10 @@ class play_game:
                  '7', '8', '9', '10', 'Jack', 'Queen', 'King']
 
     def create_cards(self, card_images):
-        # cards.clear()
         numbers = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
-        # display_names = ['Ace', '2', '3', '4', '5', '6',
-        #                  '7', '8', '9', '10', 'Jack', 'Queen', 'King']
-        # marks = ['Spade', 'Heart', 'Diamond', 'Club']
         for i, mark in enumerate(self.marks):
             for j, number in enumerate(numbers):
                 self.cards.append(Card(mark, self.display_names[j], number, card_images[i*len(numbers)+j]))
-
 
     def show_cards(self, player):
         print(f"\n{player.name}'s cards: ", end="")
@@ -85,8 +78,6 @@ class play_game:
             plt.imshow(card.image)
         plt.show()
         print(f"  total: {player.total_number}")
-
-
 
     def deal_card(self, player, Cards):
         tmp_cards = list(filter(lambda n: n.is_dealt == False, self.cards))
@@ -99,32 +90,20 @@ class play_game:
         player.total_number += tmp_card.number
         self.calc_ace(player)
 
-
     def calc_ace(self, player):
         for card in player.cards:
             if player.total_number >= 22 and card.number == 11:
                 player.total_number -= 10
                 card.number = 1
 
-
-
-    def win(self):
-        self.show_result('result')
-
-
-    def lose(self):
-        self.show_result('result')
-
-
     def choice(self):
-        message = 'Hit[1] or stand[2]'
+        message = 'Hit[1] or stand[2]: '
         choice_key = input(message)
         while not self.enable_choice(choice_key):
             choice_key = input(message)
         return int(choice_key)
 
-
-    def enable_choice(self,string):
+    def enable_choice(self, string):
         if string.isdigit():
             number = int(string)
             if number >= 1 and number <= 2:
@@ -134,130 +113,140 @@ class play_game:
         else:
             return False
 
+    def is_blackjack(self, player):
+        return player.total_number == 21
 
-    def is_blackjack(self):
-        if (self.players[0].total_number == 21):
-            return True
-        else:
-            return False
-
-
-    def is_bust(self):
-        if (self.players[0].total_number >= 22):
-            return True
-        else:
-            return False
-
+    def is_bust(self, player):
+        return player.total_number > 21
 
     def hit(self):
-        self.deal_card(self.players[0],self.cards)
+        self.deal_card(self.players[0], self.cards)
         self.show_cards(self.players[0])
-        if self.is_blackjack():
-            self.win()
-        elif self.is_bust():
-            self.lose()
+        
+        if self.is_bust(self.players[0]):
+            return 'lose'  # Player busts, loses immediately
+        elif self.is_blackjack(self.players[0]):
+            return 'win'   # Player hits 21
         else:
             choice_key = self.choice()
             if choice_key == 1:
-                self.hit()
+                return self.hit()  # Continue hitting
             elif choice_key == 2:
-                self.stand()
-
+                return self.stand()  # Stand and let dealer play
 
     def stand(self):
-        self.deal_card(self.players[1],self.cards)
-        if self.is_bust():
-            self.win(self.players,self.cards)
-        else:
-            if self.players[1].total_number < 17:
-                self.stand()
-            else:
-                result = self.judge()
-                self.show_result(result)
-
+        # Dealer plays according to rules: hit until 17 or higher
+        while self.players[1].total_number < 17:
+            self.deal_card(self.players[1], self.cards)
+            print(f"Dealer draws: {self.players[1].cards[-1].display_name} of {self.players[1].cards[-1].mark}")
+        
+        return self.judge()
 
     def judge(self):
-        diff = self.players[0].total_number - self.players[1].total_number
-        if diff == 0:
-            result = 'draw'
-        elif diff >= 1:
-            result = 'win'
+        player_total = self.players[0].total_number
+        dealer_total = self.players[1].total_number
+        
+        # Check for busts first
+        if player_total > 21:
+            return 'lose'
+        elif dealer_total > 21:
+            return 'win'
+        
+        # Neither busted, compare totals
+        if player_total > dealer_total:
+            return 'win'
+        elif player_total < dealer_total:
+            return 'lose'
         else:
-            result = 'lose'
-        return result
+            return 'draw'
 
-
-    def show_result(self,result):
+    def show_result(self, result):
         for player in self.players:
             print(f"Cards of {player.name}:")
             self.show_cards(player)
 
         if result == 'draw':
-            print('Draw')
+            print('Draw!')
         elif result == 'win':
-            print(f"{self.players[0].name} won")
+            print(f"{self.players[0].name} won!")
         else:
-            print(f"{self.players[1].name} won")
-
-
+            print(f"{self.players[1].name} won!")
 
     def play_once(self):
+        # Deal initial cards
         self.deal_card(self.players[0], self.cards)
         self.deal_card(self.players[1], self.cards)
         self.deal_card(self.players[0], self.cards)
+        
+        print("Dealer's face-up card:")
+        print(f"{self.players[1].cards[0].display_name} of {self.players[1].cards[0].mark}")
+        
         self.show_cards(self.players[0])
-        if self.is_blackjack():
-            self.win()
-        else:
-            choice_key = self.choice()
-            if choice_key == 1:
-                self.hit()
-            elif choice_key == 2:
-                self.stand()
+        
+        # Check for initial blackjack
+        if self.is_blackjack(self.players[0]):
+            self.deal_card(self.players[1], self.cards)  # Dealer gets second card
+            if self.is_blackjack(self.players[1]):
+                return 'draw'
+            else:
+                return 'win'
+        
+        # Player's turn
+        choice_key = self.choice()
+        if choice_key == 1:
+            result = self.hit()
+        elif choice_key == 2:
+            result = self.stand()
+        
+        return result
 
-
-    def player_bets(self,result,bet_coins,coins):
-            if result.lower()=='win':
-                coins+=bet_coins
-            elif result.lower()=='lose':
-                coins-=bet_coins
+    def player_bets(self, result, bet_coins, coins):
+        if result == 'win':
+            return coins + bet_coins
+        elif result == 'lose':
+            return coins - bet_coins
+        else:  # draw
             return coins
-    def enable_bet_coin(self,input_coins):
+
+    def enable_bet_coin(self, input_coins, max_bet):
         if input_coins.isdigit():
             input_coins = int(input_coins)
-            if input_coins <=100 and input_coins >0:
+            if 10 <= input_coins <= max_bet:
                 return True
-    def play(self):
-        # cards = []
+        return False
 
-        # players = []
+    def play(self):
         card_images = []
         load_image(card_images)
         self.create_cards(card_images)
 
-
-        coins=500
-        while coins>0:
-            print(f'you have {coins} s')
-            if coins<100:
-                input_message=input(f'how many coins do want to bet(10-{coins})')
-            else:
-                input_message=input('how many coins do want to bet(10-100)')
-            while not self.enable_bet_coin(input_message):
-                if coins < 100:
-                    input_message = input(f'how many coins do want to bet(10-{coins})')
-                else:
-                    input_message = input('how many coins do want to bet(10-100)')
-            bet_coins=int(input_message)
-            while bet_coins>100 or bet_coins<10 or bet_coins>coins:
-                bet_coins=int(input_message)
-            # self.players.append(Human())
-            # self.players.append(Computer())
+        coins = 500
+        while coins >= 10:  # Need at least 10 coins to play
+            print(f'\nYou have {coins} coins')
+            max_bet = min(100, coins)
+            
+            input_message = input(f'How many coins do you want to bet (10-{max_bet})? ')
+            while not self.enable_bet_coin(input_message, max_bet):
+                input_message = input(f'Invalid bet. Enter a number between 10 and {max_bet}: ')
+            
+            bet_coins = int(input_message)
+            
+            # Reset players for new game
             self.players = [Human(), Computer()]
-            self.play_once()
-            coins += self.player_bets(self.judge(),bet_coins, coins)
+            
+            # Reset cards
+            for card in self.cards:
+                card.is_dealt = False
+            
+            print(f"\n--- New Game - Bet: {bet_coins} coins ---")
+            result = self.play_once()
+            self.show_result(result)
+            
+            coins = self.player_bets(result, bet_coins, coins)
+            print(f"You now have {coins} coins")
+        
+        print("Game over! You don't have enough coins to continue playing.")
 
 
-
-
-play_game().play()
+if __name__ == "__main__":
+    play_game().play() 
